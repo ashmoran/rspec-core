@@ -18,6 +18,7 @@ module Rspec
         }
         @include_or_extend_modules = []
         @filter, @exclusion_filter = nil, nil
+        @output = $stdout
         @options = default_options
       end
 
@@ -185,7 +186,11 @@ EOM
 
       # Where does output go? For now $stdout
       def output
-        $stdout
+        @output
+      end
+
+      def output=(output)
+        @output = output
       end
 
       def puts(msg='')

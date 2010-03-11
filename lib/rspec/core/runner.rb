@@ -63,6 +63,8 @@ module Rspec
         end
 
         def run(err, out)
+          configuration.output = out # TODO move!
+
           require_all_files(configuration)
 
           total_examples_to_run = Rspec::Core.world.total_examples_to_run

@@ -230,6 +230,20 @@ module Rspec::Core
         config.debug = false
       end
     end
+    
+    describe "#output" do
+      it "defaults to STDOUT" do
+        config.output.should eq($stdout)
+      end
+    end
+    
+    describe "#output=" do
+      it "sets the output" do
+        output = mock("output")
+        config.output = output
+        config.output.should equal(output)
+      end
+    end
 
   end
 
