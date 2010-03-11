@@ -1,10 +1,10 @@
 module Rspec
   module Core
     class Configuration
-      # Control what examples are run by filtering 
+      # Control what examples are run by filtering
       attr_accessor :filter
 
-      # Control what examples are not run by filtering 
+      # Control what examples are not run by filtering
       attr_accessor :exclusion_filter
 
       # Run all examples if the run is filtered, and no examples were found.
@@ -12,15 +12,15 @@ module Rspec
 
       def initialize
         @run_all_when_everything_filtered = false
-        @hooks = { 
-          :before => { :each => [], :all => [], :suite => [] }, 
-          :after => { :each => [], :all => [], :suite => [] } 
+        @hooks = {
+          :before => { :each => [], :all => [], :suite => [] },
+          :after => { :each => [], :all => [], :suite => [] }
         }
         @include_or_extend_modules = []
         @filter, @exclusion_filter = nil, nil
         @options = default_options
       end
-      
+
       def default_options
         {
           :color_enabled => false,
@@ -29,15 +29,15 @@ module Rspec
           :files_to_run => [],
           :filename_pattern => '**/*_spec.rb',
           :formatter_class => Rspec::Core::Formatters::ProgressFormatter,
-          :backtrace_clean_patterns => [/\/lib\/ruby\//, 
-                                        /bin\/rcov:/, 
-                                        /vendor\/rails/, 
-                                        /bin\/rspec/, 
+          :backtrace_clean_patterns => [/\/lib\/ruby\//,
+                                        /bin\/rcov:/,
+                                        /vendor\/rails/,
+                                        /bin\/rspec/,
                                         /bin\/spec/,
                                         /lib\/rspec\/(core|expectations|matchers|mocks)/]
         }
       end
-      
+
       def cleaned_from_backtrace?(line)
         @options[:backtrace_clean_patterns].any? { |regex| line =~ regex }
       end
@@ -48,7 +48,7 @@ module Rspec
 
       def mock_framework=(use_me_to_mock)
         @options[:mock_framework] = use_me_to_mock
-        
+
         mock_framework_class = case use_me_to_mock.to_s
         when /rspec/i
           require 'rspec/core/mocking/with_rspec'
@@ -65,12 +65,12 @@ module Rspec
         else
           require 'rspec/core/mocking/with_absolutely_nothing'
           Rspec::Core::Mocking::WithAbsolutelyNothing
-        end 
-        
+        end
+
         @options[:mock_framework_class] = mock_framework_class
         Rspec::Core::ExampleGroup.send(:include, mock_framework_class)
       end
-      
+
       def mock_framework
         @options[:mock_framework]
       end
@@ -81,7 +81,7 @@ module Rspec
 
       def filename_pattern=(new_pattern)
         @options[:filename_pattern] = new_pattern
-      end 
+      end
 
       def color_enabled=(on_or_off)
         @options[:color_enabled] = on_or_off
@@ -120,40 +120,40 @@ EOM
       def full_description=(description)
         filter_run :full_description => /#{description}/
       end
-      
+
       # Enable profiling of example run - defaults to false
       def profile_examples
         @options[:profile_examples]
       end
-      
+
       def profile_examples=(on_or_off)
         @options[:profile_examples] = on_or_off
       end
-     
+
       def formatter_class
         @options[:formatter_class]
       end
-     
+
       def formatter=(formatter_to_use)
         formatter_class = case formatter_to_use.to_s
         when /doc/, 's', 'n'
           Rspec::Core::Formatters::DocumentationFormatter
-        when 'progress' 
+        when 'progress'
           Rspec::Core::Formatters::ProgressFormatter
-        else 
+        else
           raise ArgumentError, "Formatter '#{formatter_to_use}' unknown - maybe you meant 'documentation' or 'progress'?."
         end
         @options[:formatter_class] = formatter_class
       end
-        
+
       def formatter
         @formatter ||= formatter_class.new
       end
-      
+
       def files_to_run
         @options[:files_to_run]
       end
-      
+
       def files_or_directories_to_run=(*files)
         @options[:files_to_run] = files.flatten.inject([]) do |result, file|
           if File.directory?(file)
@@ -189,7 +189,7 @@ EOM
       end
 
       def puts(msg='')
-        output.puts(msg)    
+        output.puts(msg)
       end
 
       def parse_command_line_args(args)

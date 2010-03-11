@@ -12,7 +12,7 @@ module Rspec
       def self.autorun
         return if installed_at_exit?
         @installed_at_exit = true
-        at_exit { new.run(ARGV) ? exit(0) : exit(1) }
+        at_exit { new.run(ARGV, $stderr, $stdout) ? exit(0) : exit(1) }
       end
 
       # def configuration
@@ -28,14 +28,31 @@ module Rspec
       end
 
       # TODO drb port
-      class Drb
+      class DRbProxy
         def initialize(options)
-          @options = options
+          @argv = options[:argv]
+          @remote_port = options[:remote_port] # TODO default remote DRb port
         end
 
-        # def run
-        #
+        # def self.port(options)
+        #   (options.drb_port || ENV["RSPEC_DRB"] || 8989).to_i
         # end
+
+        def run(err, out)
+          begin
+            begin; \
+              DRb.start_service("druby://localhost:0"); \
+            rescue SocketError, Errno::EADDRNOTAVAIL; \
+              DRb.start_service("druby://:0"); \
+            end
+            spec_server = DRbObject.new_with_uri("druby://127.0.0.1:#{@remote_port}")
+            spec_server.run(@argv, err, out)
+            true
+          rescue DRb::DRbConnError
+            err.puts "No server is running"
+            false
+          end
+        end
       end
 
       class InProcess
@@ -53,7 +70,7 @@ module Rspec
           configuration.files_to_run.map {|f| require f }
         end
 
-        def run
+        def run(err, out)
           require_all_files(configuration)
 
           total_examples_to_run = Rspec::Core.world.total_examples_to_run
@@ -86,17 +103,21 @@ module Rspec
       end
 
       # TODO WIP
-      def run(args = [])
+      def run(args = [], err, out)
         options = Rspec::Core::CommandLineOptions.parse(args)
 
-        # TODO check if it's possible to send a Configuration over Drb, and if so, unify the interface
-        if options.drb?
-          Drb.new(options)
+        if options.version?
+          out.puts("rspec " + ::Rspec::Core::Version::STRING)
+          # TODO this is copied in from RSpec 1.3
+          # exit if stdout?
+        elsif options.drb?
+          # TODO check if it's possible to send a Configuration over Drb, and if so, unify the interface
+          Drb.new(options.to_drb_argv).run(err, out)
         else
           configuration = Rspec.configuration
           options.apply(configuration)
-          InProcess.new(configuration)
-        end.run
+          InProcess.new(configuration).run(err, out)
+        end
       end
 
       # def run(options)

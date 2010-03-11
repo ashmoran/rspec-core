@@ -75,6 +75,10 @@ module Rspec
             options[:drb_port] = o.to_i
           end
 
+          opts.on('-v', '--version', 'Show version') do |o|
+            options[:version] = o
+          end
+
           opts.on_tail('-h', '--help', "You're looking at it.") do
             puts opts
             exit
@@ -114,6 +118,10 @@ module Rspec
 
       def drb?
         @drb
+      end
+
+      def version?
+        !!options[:version]
       end
 
       def drb_port

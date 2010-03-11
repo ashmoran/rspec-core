@@ -237,5 +237,16 @@ describe Rspec::Core::CommandLineOptions do
     end
   end
 
+  describe "version?" do
+    it "is set to true when --version is detected" do
+      parse("--version").version?.should be_true
+      parse("-v"       ).version?.should be_true
+    end
+
+    it "is set to false when --version is absent" do
+      parse([]).version?.should be_false
+    end
+  end
+  
 end
 
