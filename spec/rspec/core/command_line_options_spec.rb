@@ -4,7 +4,15 @@ require 'ostruct'
 describe Rspec::Core::CommandLineOptions do
   
   def options_from_args(*args)
-    Rspec::Core::CommandLineOptions.new(args).parse.options
+    parse(*args).options
+  end
+  
+  def options_from_args_and_options_file(*args)
+    parse(*args).merge_options_file.options
+  end
+  
+  def parse(*args)
+    Rspec::Core::CommandLineOptions.new(args).parse
   end
 
   describe 'color_enabled' do
@@ -126,6 +134,101 @@ describe Rspec::Core::CommandLineOptions do
       options_from_args("--debug").should include(:debug => true)
       options_from_args("-d").should include(:debug => true)
     end
+  end
+  
+  describe "--drb (-X)" do
+    context "combined with --debug" do
+      it "turns off the debugger if --drb is specified first" do
+        options_from_args("--drb", "--debug").should include(:debug => false)
+        options_from_args("--drb", "-d"     ).should include(:debug => false)
+        options_from_args("-X",    "--debug").should include(:debug => false)
+        options_from_args("-X",    "-d"     ).should include(:debug => false)
+      end
+      
+      it "turns off the debugger option if --drb is specified later" do      
+        options_from_args("--debug", "--drb").should include(:debug => false)
+        options_from_args("-d",      "--drb").should include(:debug => false)
+        options_from_args("--debug", "-X"   ).should include(:debug => false)
+        options_from_args("-d",      "-X"   ).should include(:debug => false)
+      end
+      
+      it "turns off the debugger option if --drb is specified in the options file" do
+        File.stub(:exist?) { true }
+        File.stub(:readlines) { %w[ --drb  ] }
+        options_from_args_and_options_file("--debug").should include(:debug => false)
+        options_from_args_and_options_file("-d"     ).should include(:debug => false)        
+      end
+      
+      it "turns off the debugger option if --debug is specified in the options file" do
+        File.stub(:exist?) { true }
+        File.stub(:readlines) { %w[ --debug  ] }
+        options_from_args_and_options_file("--drb").should include(:debug => false)
+        options_from_args_and_options_file("-X"   ).should include(:debug => false)
+      end
+    end
+    
+    it "sends all the arguments other than --drb back to the parser after parsing options" do
+      options_from_args("--drb", "--colour").should_not have_key(:drb)
+    end
+    
+    it "records that it is a drb" do
+      options = parse("--colour", "--drb")
+      options.should be_drb
+    end
+    
+    it "records that it is a drb if --drb comes from the options file" do
+      File.stub(:exist?) { true }
+      File.stub(:readlines) { %w[ --drb  ] }
+      options = parse.merge_options_file
+      options.should be_drb
+    end
+    
+    it "does not record that it is a drb if --drb is absent" do
+      options = parse("--colour")
+      options.should_not be_drb
+    end
+    
+    # TODO #to_drb_argv may not be the best name
+    # TODO ensure all options are output
+    # TODO check if we need to spec that the short options are "expanded"
+    describe "#to_drb_argv" do
+      context "--drb specified in ARGV" do
+        it "renders all the original arguments except --drb" do
+          # no --options
+          # using eq rather than =~ because of the arguments that take options
+          parse(*%w[ --drb --colour --formatter s --line_number 1 --example pattern --profile --backtrace]).
+            to_drb_argv.should eq(%w[ --colour --formatter s --line_number 1 --example pattern --profile --backtrace ])
+        end
+      end
+
+      context "--drb specified in the options file" do
+        it "renders all the original arguments except --drb" do
+          File.stub(:exist?) { true }
+          File.stub(:readlines) { %w[ --drb --colour ] }
+          parse(*%w[ --formatter s --line_number 1 --example pattern --profile --backtrace ]).merge_options_file.
+            to_drb_argv.should eq(%w[ --colour --formatter s --line_number 1 --example pattern --profile --backtrace ])
+        end
+      end
+
+      context "--drb specified in ARGV and the options file" do
+        it "renders all the original arguments except --drb" do
+          File.stub(:exist?) { true }
+          File.stub(:readlines) { %w[ --drb --colour ] }
+          parse(*%w[ --drb --formatter s --line_number 1 --example pattern --profile --backtrace]).merge_options_file.
+            to_drb_argv.should eq(%w[ --colour --formatter s --line_number 1 --example pattern --profile --backtrace ])          
+        end
+      end
+
+      context "--drb specified in ARGV and in as ARGV-specified --options file" do
+        it "renders all the original arguments except --drb and --options" do
+          File.stub(:exist?) { true }
+          File.stub(:readlines) { %w[ --drb --colour ] }
+          parse(*%w[ --drb --options my_spec.opts --formatter s --line_number 1 --example pattern --profile --backtrace]).merge_options_file.
+            to_drb_argv.should eq(%w[ --colour --formatter s --line_number 1 --example pattern --profile --backtrace ])          
+        end
+      end
+    end
+    
   end
 
 end
