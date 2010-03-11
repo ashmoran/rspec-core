@@ -186,49 +186,55 @@ describe Rspec::Core::CommandLineOptions do
     it "does not record that it is a drb if --drb is absent" do
       options = parse("--colour")
       options.should_not be_drb
+    end  
+  end
+  
+  describe "--drb-port" do
+    it "sets the DRb port" do
+      parse("--drb-port", "1234").drb_port.should == 1234
+      parse("--drb-port", "5678").drb_port.should == 5678
     end
-    
-    # TODO #to_drb_argv may not be the best name
-    # TODO ensure all options are output
-    # TODO check if we need to spec that the short options are "expanded"
-    describe "#to_drb_argv" do
-      context "--drb specified in ARGV" do
-        it "renders all the original arguments except --drb" do
-          # no --options
-          # using eq rather than =~ because of the arguments that take options
-          parse(*%w[ --drb --colour --formatter s --line_number 1 --example pattern --profile --backtrace]).
-            to_drb_argv.should eq(%w[ --colour --formatter s --line_number 1 --example pattern --profile --backtrace ])
-        end
-      end
-
-      context "--drb specified in the options file" do
-        it "renders all the original arguments except --drb" do
-          File.stub(:exist?) { true }
-          File.stub(:readlines) { %w[ --drb --colour ] }
-          parse(*%w[ --formatter s --line_number 1 --example pattern --profile --backtrace ]).merge_options_file.
-            to_drb_argv.should eq(%w[ --colour --formatter s --line_number 1 --example pattern --profile --backtrace ])
-        end
-      end
-
-      context "--drb specified in ARGV and the options file" do
-        it "renders all the original arguments except --drb" do
-          File.stub(:exist?) { true }
-          File.stub(:readlines) { %w[ --drb --colour ] }
-          parse(*%w[ --drb --formatter s --line_number 1 --example pattern --profile --backtrace]).merge_options_file.
-            to_drb_argv.should eq(%w[ --colour --formatter s --line_number 1 --example pattern --profile --backtrace ])          
-        end
-      end
-
-      context "--drb specified in ARGV and in as ARGV-specified --options file" do
-        it "renders all the original arguments except --drb and --options" do
-          File.stub(:exist?) { true }
-          File.stub(:readlines) { %w[ --drb --colour ] }
-          parse(*%w[ --drb --options my_spec.opts --formatter s --line_number 1 --example pattern --profile --backtrace]).merge_options_file.
-            to_drb_argv.should eq(%w[ --colour --formatter s --line_number 1 --example pattern --profile --backtrace ])          
-        end
+  end
+  
+  # TODO #to_drb_argv may not be the best name
+  # TODO ensure all options are output
+  # TODO check if we need to spec that the short options are "expanded"
+  describe "#to_drb_argv" do
+    context "--drb specified in ARGV" do
+      it "renders all the original arguments except --drb" do
+        # no --options
+        # using eq rather than =~ because of the arguments that take options
+        parse(*%w[ --drb --colour --formatter s --line_number 1 --example pattern --profile --backtrace]).
+          to_drb_argv.should eq(%w[ --colour --formatter s --line_number 1 --example pattern --profile --backtrace ])
       end
     end
-    
+
+    context "--drb specified in the options file" do
+      it "renders all the original arguments except --drb" do
+        File.stub(:exist?) { true }
+        File.stub(:readlines) { %w[ --drb --colour ] }
+        parse(*%w[ --formatter s --line_number 1 --example pattern --profile --backtrace ]).merge_options_file.
+          to_drb_argv.should eq(%w[ --colour --formatter s --line_number 1 --example pattern --profile --backtrace ])
+      end
+    end
+
+    context "--drb specified in ARGV and the options file" do
+      it "renders all the original arguments except --drb" do
+        File.stub(:exist?) { true }
+        File.stub(:readlines) { %w[ --drb --colour ] }
+        parse(*%w[ --drb --formatter s --line_number 1 --example pattern --profile --backtrace]).merge_options_file.
+          to_drb_argv.should eq(%w[ --colour --formatter s --line_number 1 --example pattern --profile --backtrace ])          
+      end
+    end
+
+    context "--drb specified in ARGV and in as ARGV-specified --options file" do
+      it "renders all the original arguments except --drb and --options" do
+        File.stub(:exist?) { true }
+        File.stub(:readlines) { %w[ --drb --colour ] }
+        parse(*%w[ --drb --options my_spec.opts --formatter s --line_number 1 --example pattern --profile --backtrace]).merge_options_file.
+          to_drb_argv.should eq(%w[ --colour --formatter s --line_number 1 --example pattern --profile --backtrace ])          
+      end
+    end
   end
 
 end

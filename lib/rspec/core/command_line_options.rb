@@ -71,6 +71,10 @@ module Rspec
             options[:drb] = true
           end
 
+          opts.on('--drb-port [PORT]', 'Port to connect to on the DRb server') do |o|
+            options[:drb_port] = o.to_i
+          end
+
           opts.on_tail('-h', '--help', "You're looking at it.") do
             puts opts
             exit
@@ -110,6 +114,10 @@ module Rspec
 
       def drb?
         @drb
+      end
+
+      def drb_port
+        options[:drb_port]
       end
 
       def apply(config)
