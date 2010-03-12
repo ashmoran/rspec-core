@@ -106,7 +106,7 @@ module Rspec
           # exit if stdout?
         elsif options.drb?
           # TODO check if it's possible to send a Configuration over Drb, and if so, unify the interface
-          DRbProxy.new(:argv => options.to_drb_argv, :remote_port => options.drb_port).run(err, out)
+          DRbProxy.new(:argv => options.to_drb_argv, :remote_port => options.drb_port || ENV['RSPEC_DRB'].to_i).run(err, out)
         else
           configuration = Rspec.configuration
           options.apply(configuration)

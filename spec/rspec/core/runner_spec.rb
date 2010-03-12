@@ -43,7 +43,7 @@ describe Rspec::Core::Runner do
         @err, @out = mock("error stream"), mock("output stream")
         @drb_port, @drb_argv = mock(Fixnum), mock(Array)
         
-        @options = stub(Rspec::Core::CommandLineOptions, :version? => false, :drb? => true, :drb_port => @drb_port, :to_drb_argv => @drb_argv)
+        @options = mock(Rspec::Core::CommandLineOptions, :version? => false, :drb? => true, :drb_port => @drb_port, :to_drb_argv => @drb_argv)
         Rspec::Core::CommandLineOptions.stub(:parse => @options)
         
         @drb_proxy = mock(Rspec::Core::Runner::DRbProxy, :run => nil)
@@ -55,6 +55,35 @@ describe Rspec::Core::Runner do
         Rspec::Core::Runner.new.run(%w[ --unused-args ], @err, @out)
       end
       
+      context "with RSPEC_DRB environment variable set" do
+        def with_RSPEC_DRB_set_to(val)
+          original = ENV['RSPEC_DRB']
+          begin
+            ENV['RSPEC_DRB'] = val
+            yield
+          ensure
+            ENV['RSPEC_DRB'] = original
+          end
+        end
+        
+        it "uses RSPEC_DRB value" do
+          @options.stub(:drb_port => nil)
+          with_RSPEC_DRB_set_to('9000') do
+            Rspec::Core::Runner::DRbProxy.should_receive(:new).with(:argv => @drb_argv, :remote_port => 9000)
+            Rspec::Core::Runner.new.run(%w[ --unused-args ], @err, @out)
+          end
+        end
+          
+        context "and config variable set" do
+          it "uses configured value" do
+            with_RSPEC_DRB_set_to('9000') do
+              Rspec::Core::Runner::DRbProxy.should_receive(:new).with(:argv => @drb_argv, :remote_port => @drb_port)
+              Rspec::Core::Runner.new.run(%w[ --unused-args ], @err, @out)
+            end
+          end
+        end
+      end
+
       it "runs specs over the proxy" do
         @drb_proxy.should_receive(:run).with(@err, @out)
         Rspec::Core::Runner.new.run(%w[ --unused-args ], @err, @out)
@@ -183,46 +212,6 @@ describe Rspec::Core::Runner do
       end
     end
     
-    context "port" do
-      # before do
-      #   @options = stub(Rspec::Core::CommandLineOptions, :drb? => true, :drb_port => nil)
-      #   Rspec::Core::CommandLineOptions.stub(:parse => @options)
-      # end
-      # 
-      # context "with no additional configuration" do
-      #   it "defaults to 8989" do
-      #     Rspec::Core::Runner::should == 8989
-      #   end
-      # end
-      # 
-      # context "with RSPEC_DRB environment variable set" do
-      #   def with_RSPEC_DRB_set_to(val)
-      #     original = ENV['RSPEC_DRB']
-      #     begin
-      #       ENV['RSPEC_DRB'] = val
-      #       yield
-      #     ensure
-      #       ENV['RSPEC_DRB'] = original
-      #     end
-      #   end
-      #   
-      #   it "uses RSPEC_DRB value" do
-      #     with_RSPEC_DRB_set_to('9000') do
-      #       Spec::Runner::DrbCommandLine.port(@options).should == 9000
-      #     end
-      #   end
-      #     
-      #   context "and config variable set" do
-      #     it "uses configured value" do
-      #       @options.stub(:drb_port => '5000')
-      #       with_RSPEC_DRB_set_to('9000') do
-      #         Spec::Runner::DrbCommandLine.port(@options).should == 5000
-      #       end
-      #     end
-      #   end
-      #     
-      # end
-    end
   end
   
 end
