@@ -36,6 +36,32 @@ describe Rspec::Core::Runner do
     end
   end
   
+  # TODO move collaboration specs into this and cover the other situations
+  describe "#run" do
+    context "options indicate DRb" do
+      before(:each) do
+        @err, @out = mock("error stream"), mock("output stream")
+        @drb_port, @drb_argv = mock(Fixnum), mock(Array)
+        
+        @options = stub(Rspec::Core::CommandLineOptions, :version? => false, :drb? => true, :drb_port => @drb_port, :to_drb_argv => @drb_argv)
+        Rspec::Core::CommandLineOptions.stub(:parse => @options)
+        
+        @drb_proxy = mock(Rspec::Core::Runner::DRbProxy, :run => nil)
+        Rspec::Core::Runner::DRbProxy.stub(:new => @drb_proxy)
+      end
+      
+      it "builds a DRbProxy" do
+        Rspec::Core::Runner::DRbProxy.should_receive(:new).with(:argv => @drb_argv, :remote_port => @drb_port)
+        Rspec::Core::Runner.new.run(%w[ --unused-args ], @err, @out)
+      end
+      
+      it "runs specs over the proxy" do
+        @drb_proxy.should_receive(:run).with(@err, @out)
+        Rspec::Core::Runner.new.run(%w[ --unused-args ], @err, @out)
+      end
+    end
+  end
+  
   # TODO unless jruby?
   describe "::DRbProxy" do
     context "without server running" do
@@ -148,50 +174,55 @@ describe Rspec::Core::Runner do
         out = run_spec_via_druby(["-c", @dummy_spec_filename])
         out.should =~ /\e\[31m/n
       end
+      
+      it "integrates via #run" do
+        puts "QUACK"
+        err = out = StringIO.new
+        result = Rspec::Core::Runner.new.run(%W[ --drb --drb-port #{drb_port} --version ], err, out)
+        result.should be_true
+      end
     end
-  end
-  
-  
-  describe "::Drb old" do
-    # context "#port" do
-    #   before do
-    #     @options = stub("options", :drb_port => nil)
-    #   end
-    #   
-    #   context "with no additional configuration" do
-    #     it "defaults to 8989" do
-    #       Spec::Runner::DrbCommandLine.port(@options).should == 8989
-    #     end
-    #   end
-    #   
-    #   context "with RSPEC_DRB environment variable set" do
-    #     def with_RSPEC_DRB_set_to(val)
-    #       original = ENV['RSPEC_DRB']
-    #       begin
-    #         ENV['RSPEC_DRB'] = val
-    #         yield
-    #       ensure
-    #         ENV['RSPEC_DRB'] = original
-    #       end
-    #     end
-    #     
-    #     it "uses RSPEC_DRB value" do
-    #       with_RSPEC_DRB_set_to('9000') do
-    #         Spec::Runner::DrbCommandLine.port(@options).should == 9000
-    #       end
-    #     end
-    # 
-    #     context "and config variable set" do
-    #       it "uses configured value" do
-    #         @options.stub(:drb_port => '5000')
-    #         with_RSPEC_DRB_set_to('9000') do
-    #           Spec::Runner::DrbCommandLine.port(@options).should == 5000
-    #         end
-    #       end
-    #     end
-    # 
-    #   end
-    # end
+    
+    context "port" do
+      # before do
+      #   @options = stub(Rspec::Core::CommandLineOptions, :drb? => true, :drb_port => nil)
+      #   Rspec::Core::CommandLineOptions.stub(:parse => @options)
+      # end
+      # 
+      # context "with no additional configuration" do
+      #   it "defaults to 8989" do
+      #     Rspec::Core::Runner::should == 8989
+      #   end
+      # end
+      # 
+      # context "with RSPEC_DRB environment variable set" do
+      #   def with_RSPEC_DRB_set_to(val)
+      #     original = ENV['RSPEC_DRB']
+      #     begin
+      #       ENV['RSPEC_DRB'] = val
+      #       yield
+      #     ensure
+      #       ENV['RSPEC_DRB'] = original
+      #     end
+      #   end
+      #   
+      #   it "uses RSPEC_DRB value" do
+      #     with_RSPEC_DRB_set_to('9000') do
+      #       Spec::Runner::DrbCommandLine.port(@options).should == 9000
+      #     end
+      #   end
+      #     
+      #   context "and config variable set" do
+      #     it "uses configured value" do
+      #       @options.stub(:drb_port => '5000')
+      #       with_RSPEC_DRB_set_to('9000') do
+      #         Spec::Runner::DrbCommandLine.port(@options).should == 5000
+      #       end
+      #     end
+      #   end
+      #     
+      # end
+    end
   end
   
 end

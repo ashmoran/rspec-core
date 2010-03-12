@@ -110,6 +110,7 @@ module Rspec
         # options[:options_file] # TODO check
         argv << "--profile" if options[:profile_examples]
         argv << "--backtrace" if options[:full_backtrace]
+        argv << "--version" if options[:version]
         # options[:debug] # TODO check - we're only making to_s for DRb
         # options[:drb] # TODO check - we're only making to_s for DRb
 
@@ -121,7 +122,7 @@ module Rspec
       end
 
       def version?
-        !!options[:version]
+        !!options[:version] && !drb?
       end
 
       def drb_port

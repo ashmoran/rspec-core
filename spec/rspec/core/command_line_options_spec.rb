@@ -167,6 +167,34 @@ describe Rspec::Core::CommandLineOptions do
       end
     end
     
+    context "combined with --version" do
+      # TODO this is proof we need a proper OO solution to the "type" of CommandLineOptions we get from parsing 
+      it "preserves --version in the DRb args but doesn't set #version? (currently confuses Runner#run)" do
+        options = parse("--drb", "--version")
+        options.should be_drb
+        options.should_not be_version
+      end
+      
+      it "handles --version first" do
+        options = parse("--version", "--drb")
+        options.should be_drb
+        options.should_not be_version        
+      end
+      
+      it "handles --drb in the options file" do
+        File.stub(:exist?) { true }
+        File.stub(:readlines) { %w[ --drb  ] }
+        options = parse("--version").merge_options_file
+        
+        options.should be_drb
+        options.should_not be_version        
+      end
+      
+      it "doesn't handle --version in the options file" do
+        # that would be silly
+      end
+    end
+    
     it "sends all the arguments other than --drb back to the parser after parsing options" do
       options_from_args("--drb", "--colour").should_not have_key(:drb)
     end
@@ -186,7 +214,7 @@ describe Rspec::Core::CommandLineOptions do
     it "does not record that it is a drb if --drb is absent" do
       options = parse("--colour")
       options.should_not be_drb
-    end  
+    end
   end
   
   describe "--drb-port" do
@@ -198,7 +226,7 @@ describe Rspec::Core::CommandLineOptions do
   
   # TODO #to_drb_argv may not be the best name
   # TODO ensure all options are output
-  # TODO check if we need to spec that the short options are "expanded"
+  # TODO check if we need to spec that the short options are "expanded" ("-v" becomes "--version" currently)
   describe "#to_drb_argv" do
     context "--drb specified in ARGV" do
       it "renders all the original arguments except --drb" do
