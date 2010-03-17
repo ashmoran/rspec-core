@@ -205,7 +205,6 @@ describe Rspec::Core::Runner do
       end
       
       it "integrates via #run" do
-        puts "QUACK"
         err = out = StringIO.new
         result = Rspec::Core::Runner.new.run(%W[ --drb --drb-port #{drb_port} --version ], err, out)
         result.should be_true
