@@ -222,12 +222,20 @@ describe Rspec::Core::CommandLineOptions do
       parse("--drb-port", "1234").drb_port.should == 1234
       parse("--drb-port", "5678").drb_port.should == 5678
     end
+    
+    it "defaults to 8989" do
+      parse.drb_port.should == 8989
+    end
   end
   
   # TODO #to_drb_argv may not be the best name
   # TODO ensure all options are output
   # TODO check if we need to spec that the short options are "expanded" ("-v" becomes "--version" currently)
   describe "#to_drb_argv" do
+    it "preserves extra arguments" do
+      parse(*%w[ a --drb b --colour c ]).to_drb_argv.should eq(%w[ --colour a b c ])
+    end
+    
     context "--drb specified in ARGV" do
       it "renders all the original arguments except --drb" do
         # no --options

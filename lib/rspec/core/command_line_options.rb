@@ -113,8 +113,8 @@ module Rspec
         argv << "--version" if options[:version]
         # options[:debug] # TODO check - we're only making to_s for DRb
         # options[:drb] # TODO check - we're only making to_s for DRb
-
-        argv # TODO need a spec to prove this line is necessary
+        
+        argv + options[:files_or_directories_to_run]
       end
 
       def drb?
@@ -126,7 +126,7 @@ module Rspec
       end
 
       def drb_port
-        options[:drb_port]
+        options[:drb_port] || 8989
       end
 
       def apply(config)
