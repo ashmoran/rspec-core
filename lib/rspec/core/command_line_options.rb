@@ -26,6 +26,7 @@ module Rspec
       end
 
       def _parse
+        # TODO when RSpec starts in the Spork process, this incorrectly reads ARGV
         options[:files_or_directories_to_run] = OptionParser.new do |opts|
           opts.banner = "Usage: rspec [options] [files or directories]"
 
@@ -83,7 +84,7 @@ module Rspec
             puts opts
             exit
           end
-        end.parse!(@args)
+        end.parse!(@args) # TODO check parse! vs parse
 
         self
       end

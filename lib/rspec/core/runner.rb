@@ -97,7 +97,7 @@ module Rspec
       end
 
       # TODO WIP
-      def run(args = [], err, out)
+      def run(args, err, out)
         options = Rspec::Core::CommandLineOptions.parse(args)
 
         if options.version?

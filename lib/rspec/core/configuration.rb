@@ -197,9 +197,10 @@ EOM
         output.puts(msg)
       end
 
-      def parse_command_line_args(args)
-        @command_line_options = Rspec::Core::CommandLineOptions.parse(args)
-      end
+      # TODO is this dead code?
+      # def parse_command_line_args(args)
+      #   @command_line_options = Rspec::Core::CommandLineOptions.parse(args)
+      # end
 
       def include(mod, options={})
         @include_or_extend_modules << [:include, mod, options]
