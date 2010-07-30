@@ -99,6 +99,22 @@ module RSpec::Core
 
           scopes[0].should be(scopes[1])
         end
+        
+        it "has access to class methods defined in the host group" do
+          class_method_value = nil
+          shared_examples_for("thing") do
+            class_method_value = class_method
+          end
+          group = ExampleGroup.describe("group") do
+            it_should_behave_like "thing" do
+              def self.class_method
+                :inherited_class_method_value
+              end
+            end
+          end
+          group.run_all
+          class_method_value.should eq(:inherited_class_method_value)
+        end
       end
 
       it "raises when named shared example_group can not be found" do

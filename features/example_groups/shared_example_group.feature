@@ -61,7 +61,7 @@ Feature: Shared example group
 
     shared_examples_for "a collection object" do
       describe "<<" do
-        it "adds objects to the end of the collection" do
+        it "adds objects to the end of the #{collection_name}" do
           collection << 1
           collection << 2
           collection.to_a.should eq([1,2])
@@ -71,12 +71,14 @@ Feature: Shared example group
 
     describe Array do
       it_should_behave_like "a collection object" do
+        def self.collection_name; "array"; end
         let(:collection) { Array.new }
       end
     end
 
     describe Set do
       it_should_behave_like "a collection object" do
+        def self.collection_name; "set"; end
         let(:collection) { Set.new }
       end
     end
@@ -88,12 +90,12 @@ Feature: Shared example group
       Array
         it should behave like a collection object
           <<
-            adds objects to the end of the collection
+            adds objects to the end of the array
 
       Set
         it should behave like a collection object
           <<
-            adds objects to the end of the collection
+            adds objects to the end of the set
       """
 
   Scenario: Aliasing "it_should_behave_like" to "it_has_behavior"

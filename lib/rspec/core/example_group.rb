@@ -65,9 +65,10 @@ module RSpec
             shared_block = world.shared_example_groups[name]
             raise "Could not find shared example group named \#{name.inspect}" unless shared_block
 
-            shared_group = describe("#{report_label} \#{name}", &shared_block)
-            shared_group.class_eval(&customization_block) if customization_block
-            shared_group
+            describe "#{report_label} \#{name}" do
+              module_eval &customization_block if customization_block
+              module_eval &shared_block
+            end
           end
         END_RUBY
       end
