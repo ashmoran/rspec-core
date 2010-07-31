@@ -30,6 +30,7 @@ module RSpec
             end
             self.class.class_eval do
               define_method(name) do |*args|
+                # TODO: This needs a spec, but there are issues with class methods in general
                 %'<missing class method "#{name}">'
               end
             end
