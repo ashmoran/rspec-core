@@ -5,6 +5,7 @@ module RSpec
       include Subject
       include Let
       include Pending
+      extend SharedExampleGroup::Requirements
 
       attr_accessor :example
 
