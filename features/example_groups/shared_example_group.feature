@@ -123,5 +123,5 @@ Feature: Shared example group
       """
       String
         has behavior: sortability
-          responds to <==>
+          responds to <=>
       """
