@@ -2,6 +2,11 @@ require 'spec_helper'
 
 module RSpec::Core
   describe SharedExampleGroup::Requirements do
+    # (AM 2010-08-01) I've described this feature with one epic example for the passing case,
+    # followed by individual ones for the scenarios where a requirement is not met.  This may
+    # not be the best way of organising it, and there's a lot of duplication in this file,
+    # but I thought it made sense to defer refactoring until we know what the functionality
+    # should actually do...
     it "lets you specify requirements for shared example groups" do
       shared_examples_for("thing") do
         require_instance_method :configuration_instance_method, "message"
@@ -10,7 +15,7 @@ module RSpec::Core
         require_instance_method :configuration_let, "message"
         require_instance_method :host_let, "message"
         
-        # TODO: Should we allow an alias specifically for `let`? eg:
+        # TODO: (AM 2010-08-01) Should we allow an alias specifically for `let`? eg:
         # parameter :host_variable, "message"
         # (`let` currently just uses `define_method`)
         
@@ -82,16 +87,17 @@ module RSpec::Core
           it_should_behave_like "thing"
         end
 
-        # I don't know why the examples are wrapped in another array
+        # (AM 2010-08-01) I don't know why the examples are wrapped in another array
         examples = group.descendant_filtered_examples.flatten
       
         group.run_all
       
         examples.each do |example|
+          # (AM 2010-08-01) I'm sure this is not the best way of doing this, but it's the only way I could make work
           example.execution_result[:status].should eq 'failed'
           example.execution_result[:exception_encountered].should be_an(ArgumentError)
           example.execution_result[:exception_encountered].message.should eq 'Shared example group requires instance method :provided_method (description of what provided_method provides)'
-          # TODO: Will require storing the fact that groups generated from shared examples were generated so
+          # TODO: (AM 2010-08-01) Will require storing the fact that groups generated from shared examples were generated so
           # example.execution_result[:exception_encountered].message.should eq 'Shared example group "thing" ...'
         end
       end
@@ -110,15 +116,16 @@ module RSpec::Core
           it_should_behave_like "thing"
         end
       
-        # I don't know why the examples are wrapped in another array
+        # (AM 2010-08-01) I don't know why the examples are wrapped in another array
         example = group.descendant_filtered_examples.flatten.first
       
         group.run_all
       
+        # (AM 2010-08-01) I'm sure this is not the best way of doing this, but it's the only way I could make work
         example.execution_result[:status].should eq 'failed'
         example.execution_result[:exception_encountered].should be_an(ArgumentError)
         example.execution_result[:exception_encountered].message.should eq 'Shared example group requires class method :example_class_method (description of what example_class_method provides)'
-        # TODO: Will require storing the fact that groups generated from shared examples were generated so
+        # TODO: (AM 2010-08-01) Will require storing the fact that groups generated from shared examples were generated so
         # example.execution_result[:exception_encountered].message.should eq 'Shared example group "thing" ...'
       end
       
@@ -134,15 +141,16 @@ module RSpec::Core
           it_should_behave_like "thing"
         end
 
-        # I don't know why the examples are wrapped in another array
+        # (AM 2010-08-01) I don't know why the examples are wrapped in another array
         example = group.descendant_filtered_examples.flatten.first
       
         group.run_all
       
+        # (AM 2010-08-01) I'm sure this is not the best way of doing this, but it's the only way I could make work
         example.execution_result[:status].should eq 'failed'
         example.execution_result[:exception_encountered].should be_an(ArgumentError)
         example.execution_result[:exception_encountered].message.should eq 'Shared example group requires class method :example_class_method (description of what example_class_method provides)'
-        # TODO: Will require storing the fact that groups generated from shared examples were generated so
+        # TODO: (AM 2010-08-01) Will require storing the fact that groups generated from shared examples were generated so
         # example.execution_result[:exception_encountered].message.should eq 'Shared example group "thing" ...'
       end
       
@@ -157,7 +165,7 @@ module RSpec::Core
           it_should_behave_like "thing"
         end
 
-        # I don't know why the examples are wrapped in another array
+        # (AM 2010-08-01) I don't know why the examples are wrapped in another array
         example = group.descendant_filtered_examples.flatten.first
               
         example.description.should eq 'puts a descriptive message here: <missing class method "example_class_method">'
