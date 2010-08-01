@@ -1,3 +1,16 @@
+# Enable this spectaculary useful Ruby 1.9 method in Ruby 1.8
+# If this stays in the code, it needs a proper home - leaving it
+# here in the mean time for readablility's sake.
+unless respond_to?(:define_singleton_method)
+  class Object
+    def define_singleton_method(name, &block)
+      class << self; self; end.class_eval do
+        define_method(name, &block)
+      end
+    end
+  end
+end
+
 module RSpec
   module Core
     module SharedExampleGroup
@@ -28,11 +41,8 @@ module RSpec
             before(:each) do
               raise ArgumentError.new(%'Shared example group requires class method :#{name} (#{description})')
             end
-            self.class.class_eval do
-              define_method(name) do |*args|
-                # TODO: This needs a spec, but there are issues with class methods in general
-                %'<missing class method "#{name}">'
-              end
+            define_singleton_method(name) do |*args|
+              %'<missing class method "#{name}">'
             end
           end
         end

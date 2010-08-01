@@ -124,9 +124,9 @@ module RSpec::Core
       
       it "raises an ArgumentError even if the class method is used in the example definitions" do
         shared_examples_for("thing") do
-          require_class_method :other_example_class_method, "description of what other_example_class_method provides"
-          it "will fail this example but not because we use #{other_example_class_method} here" do
-            other_example_class_method.should eq "a comparison that should never get run"
+          require_class_method :example_class_method, "description of what example_class_method provides"
+          it "will fail this example but not because we use #{example_class_method} here" do
+            example_class_method.should eq "a comparison that should never get run"
           end
         end
 
@@ -141,11 +141,26 @@ module RSpec::Core
       
         example.execution_result[:status].should eq 'failed'
         example.execution_result[:exception_encountered].should be_an(ArgumentError)
-        example.execution_result[:exception_encountered].message.should eq 'Shared example group requires class method :other_example_class_method (description of what other_example_class_method provides)'
+        example.execution_result[:exception_encountered].message.should eq 'Shared example group requires class method :example_class_method (description of what example_class_method provides)'
         # TODO: Will require storing the fact that groups generated from shared examples were generated so
         # example.execution_result[:exception_encountered].message.should eq 'Shared example group "thing" ...'
-        
-        pending "This only passes if you use a unique class method name (:other_example_class_method, not :example_class_method)"
+      end
+      
+      it "defaults the class method to a message that indicates the error" do
+        shared_examples_for("thing") do
+          require_class_method :example_class_method, "description of what example_class_method provides"
+          it "puts a descriptive message here: #{example_class_method}" do
+          end
+        end
+
+        group = ExampleGroup.describe("group") do
+          it_should_behave_like "thing"
+        end
+
+        # I don't know why the examples are wrapped in another array
+        example = group.descendant_filtered_examples.flatten.first
+              
+        example.description.should eq 'puts a descriptive message here: <missing class method "example_class_method">'
       end
     end 
   end
